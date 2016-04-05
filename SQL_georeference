@@ -1,0 +1,15 @@
+Georeferencing datasett with SQL from for instance SSB (http://data.ssb.no/api/?tags=innvandring), need eather CSV or Json file. 
+
+SQL:
+
+SELECT 
+sys.cartodb_id, 
+sys._2015,
+sys._2014,
+sys.k_nr,
+sys.kommune,
+sys.beskrivelse,
+kommuner.the_geom_webmercator
+FROM sysselsette_2014_2015_knr as sys
+join kommuner on left(sys.k_nr, 4)=komnr
+
