@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<style>
+table,th,td {
+  border : 1px solid black;
+  border-collapse: collapse;
+}
+th,td {
+  padding: 5px;
+}
+</style>
+<body>
+
+<button type="button" onclick="loadDoc()">Get Befolkning</button>
+<br><br>
+<div id="content"></div>
+
+<script>
+function loadDoc() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+      myFunction(xhttp);
+    }
+  };
+  xhttp.open("GET", "http://data.ssb.no/api/v0/dataset/1108.json?lang=no", true);
+  xhttp.send();
+}
+function myFunction(xml) {
+	var i;
+	var xmlDoc = xml.responseXML;
+	var jsonBef = JSON.parse(xml.responseText);
+	console.log(jsonBef);
+
+	var newJson = [];
+
+	var newArray = {};
+	console.log(jsonBef.dataset.dimension.Region.category.index);
+	for (var nr in jsonBef.dataset.dimension.Region.category.index) {
+	  newArray[jsonBef.dataset.dimension.Region.category.index[nr]] = nr;
+	}
+	console.log(newArray);
+	console.log(jsonBef.dataset.value[0]);
+	 
+	var j = 0;
+	for (var i = 0; i < 4731; i+=11) {
+
+		var newData = {};
+
+		newData = {
+			'komm': newArray[j],
+  			'navn': jsonBef.dataset.dimension.Region.category.label[newArray[j]],
+  			'Folketallet_ing': jsonBef.dataset.value[i],
+  			'Fodte': jsonBef.dataset.value[i+1],
+  			'Dode': jsonBef.dataset.value[i+2],
+  			'Fodselsoverskudd': jsonBef.dataset.value[i+3],
+  			'Innvandring': jsonBef.dataset.value[i+4],
+  			'Utvandring': jsonBef.dataset.value[i+5],
+  			'Tilflytning': jsonBef.dataset.value[i+6],
+  			'Fraflytning': jsonBef.dataset.value[i+7],
+  			'Nettoinnflytning': jsonBef.dataset.value[i+8],
+  			'Folketilvekst': jsonBef.dataset.value[i+9],
+  			'Folketallet_utg': jsonBef.dataset.value[i+10]
+		}
+		newJson.push(newData);
+	  	j += 1;
+	}
+
+	console.log(JSON.stringify(newJson));
+	var json = JSON.stringify(newJson);
+	var blob = new Blob([json], {type: "application/json"});
+	var url  = URL.createObjectURL(blob);
+
+	var a = document.createElement('a');
+	a.download    = "befolkningsutvikling_komm.json";
+	a.href        = url;
+	a.textContent = "Download befolkningsutvikling_komm.json";
+
+	document.getElementById('content').appendChild(a);
+
+
+}
+</script>
+
+</body>
+</html>
