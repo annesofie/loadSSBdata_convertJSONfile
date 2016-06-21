@@ -39,14 +39,14 @@ function createCORSRequest(method, url) {
   if ("withCredentials" in xhr) {
   	console.log('if');
     // XHR for Chrome/Firefox/Opera/Safari.
-    xhr.open(method, url, true, 'TjeDatexNorkart', 'NnAtLhrW8R');
-    //xhr.setRequestHeader('Authorization', 'TjeDatexNorkart:NnAtLhrW8R');
+    xhr.open(method, url, true, 'bnavn', 'pwd');
+    //xhr.setRequestHeader('Authorization', 'bnavn:pwd');
     //xhr.setRequestHeader('Content-Type', 'application/xml');
   } else if (typeof XDomainRequest != "undefined") {
     // XDomainRequest for IE.
     xhr = new XDomainRequest();
     xhr.open(method, url);
-    xhr.setRequestHeader('TjeDatexNorkart', 'NnAtLhrW8R');
+    xhr.setRequestHeader('bnavn', 'pwd');
     xhr.setRequestHeader('Content-Type', 'application/xml');
     xhr.send()
   } else {
