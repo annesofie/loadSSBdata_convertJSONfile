@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<style>
+table,th,td {
+  border : 1px solid black;
+  border-collapse: collapse;
+}
+th,td {
+  padding: 5px;
+}
+</style>
+<body>
+
+<button type="button" onclick="makeCorsRequest()">Get Befolkning</button>
+<br><br>
+<div id="content"><p></p></div>
+
+<script>
+function loadDoc() {
+  /*var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+      myFunction(xhttp);
+    }
+  };
+  xhttp.open("GET", "http://www.vegvesen.no/ws/no/vegvesen/veg/trafikkpublikasjon/vaer/1/GetMeasuredWeatherData", true);
+  xhttp.setRequestHeader("Authorization", "Basic"+btoa("TjeDatexNorkart:NnAtLhrW8R"));
+  xhttp.send();*/
+
+	var xhr = createCORSRequest('GET', "http://www.vegvesen.no/ws/no/vegvesen/veg/trafikkpublikasjon/vaer/1/GetMeasuredWeatherData");
+	if (!xhr) {
+  		throw new Error('CORS not supported');
+	}
+	myFunction(xhr);
+}
+// Create the XHR object.
+function createCORSRequest(method, url) {
+  var xhr = new XMLHttpRequest();
+  if ("withCredentials" in xhr) {
+  	console.log('if');
+    // XHR for Chrome/Firefox/Opera/Safari.
+    xhr.open(method, url, true, 'TjeDatexNorkart', 'NnAtLhrW8R');
+    //xhr.setRequestHeader('Authorization', 'TjeDatexNorkart:NnAtLhrW8R');
+    //xhr.setRequestHeader('Content-Type', 'application/xml');
+  } else if (typeof XDomainRequest != "undefined") {
+    // XDomainRequest for IE.
+    xhr = new XDomainRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('TjeDatexNorkart', 'NnAtLhrW8R');
+    xhr.setRequestHeader('Content-Type', 'application/xml');
+    xhr.send()
+  } else {
+    // CORS not supported.
+    xhr = null;
+  }
+  return xhr;
+}
+
+// Helper method to parse the title tag from the response.
+function getTitle(text) {
+  return text.match('<title>(.*)?</title>');
+}
+
+// Make the actual CORS request.
+function makeCorsRequest() {
+  // All HTML5 Rocks properties support CORS.
+  var url = "https://www.vegvesen.no/ws/no/vegvesen/veg/trafikkpublikasjon/vaer/1/GetMeasuredWeatherData";
+
+  var xhr = createCORSRequest('GET', url);
+  if (!xhr) {
+    alert('CORS not supported');
+    return;
+  }
+
+  // Response handlers.
+  xhr.onload = function() {
+    var text = xhr.responseText;
+    var title = getTitle(text);
+    alert('Response from CORS request to ' + url + ': ' + title);
+    myFunction(xhr);
+    document.getElementById("content").value = text;
+  };
+
+  xhr.onerror = function() {
+    alert('Woops, there was an error making the request.');
+  };
+
+  xhr.send();
+}
+function myFunction(xml) {
+
+	console.log(xml.responseText);
+
+	var json = JSON.stringify(xmlToJson(xml));
+	console.log(json);
+	var blob = new Blob([json], {type: "application/json"});
+	var url  = URL.createObjectURL(blob);
+
+	var a = document.createElement('a');
+	a.download    = "weathertest.json";
+	a.href        = url;
+	a.textContent = "weathertest.json";
+
+	document.getElementById('content').appendChild(a);
+
+
+}
+// Changes XML to JSON
+function xmlToJson(xml) {
+	
+	// Create the return object
+	var obj = {};
+
+	if (xml.nodeType == 1) { // element
+		// do attributes
+		if (xml.attributes.length > 0) {
+		obj["@attributes"] = {};
+			for (var j = 0; j < xml.attributes.length; j++) {
+				var attribute = xml.attributes.item(j);
+				obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+			}
+		}
+	} else if (xml.nodeType == 4) { // text
+		obj = xml.nodeValue;
+	}
+
+	// do children
+	if (xml.hasChildNodes()) {
+		for(var i = 0; i < xml.childNodes.length; i++) {
+			var item = xml.childNodes.item(i);
+			var nodeName = item.nodeName;
+			if (typeof(obj[nodeName]) == "undefined") {
+				obj[nodeName] = xmlToJson(item);
+			} else {
+				if (typeof(obj[nodeName].push) == "undefined") {
+					var old = obj[nodeName];
+					obj[nodeName] = [];
+					obj[nodeName].push(old);
+				}
+				obj[nodeName].push(xmlToJson(item));
+			}
+		}
+	}
+	return obj;
+};
+</script>
+
+</body>
+</html>
